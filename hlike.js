@@ -102,6 +102,7 @@ var hlike = {
       widgetFrame.appendChild(widgetFrameInner);
       widgetFrameInner.setAttribute('class', 'g-plusone');
       widgetFrameInner.setAttribute('id', 'g-plusone-'+i);
+      
     }
     
     hlike._gpInit(function(){
@@ -116,6 +117,41 @@ var hlike = {
     return hlike;
     
   },
+
+  pin: function(selector) {
+    var d = document;
+    var elements = d.querySelectorAll(selector);
+    hlike._pin.widgets = elements;
+    
+    for(var i = hlike._pin.widgets.length-1; i >= 0; i--) {
+      var widget = hlike._pin.widgets[i];
+      var widgetFrame = d.createElement('a'); 
+        
+      widget.appendChild(widgetFrame);
+      
+      widgetFrame.setAttribute('data-pin-do', 'buttonBookmark');
+      widgetFrame.setAttribute('data-pin-color', 'red');
+      widgetFrame.setAttribute('href', '//www.pinterest.com/pin/create/button/');
+      
+      var img = d.createElement('img');
+      img.src = '//assets.pinterest.com/images/pidgets/pinit_fg_en_rect_red_20.png';
+      widgetFrame.appendChild(img);
+    }
+    
+    hlike._pinInit(function(){
+      console.log('pin init!');
+      var pinInterval = setInterval(function() {
+        for(var i = hlike._pin.widgets.length-1; i >= 0; i--) {
+          var widget = hlike._pin.widgets[i];
+          hlike._pin.hide(widget);
+        }
+      }, 1000);//The Kostyl' :)
+      setTimeout(function(){
+        clearInterval(pinInterval);
+      }, 1000*20);
+    });
+  },
+
   _hide: function(widget) {
     var widget_iframe = widget.querySelector('.hlike-frame');
     for(var key in hlike.style.widget) {
@@ -125,10 +161,22 @@ var hlike = {
       widget_iframe.style[key] = hlike.style.widget_iframe[key];
     }
   },
+  
   _fs: document.getElementsByTagName('script')[0],
   _fb: {id: 'facebook-jssdk'},
   _vk: {},
   _gp: {},
+  _pin: {
+    hide: function(widget) {
+    var widget_iframe = widget.childNodes[0];
+    for(var key in hlike.style.widget) {
+      widget.style.cssText += key+':'+hlike.style.widget[key]+' !important';
+    }
+    for(var key in hlike.style.widget_iframe) {
+      widget_iframe.style.cssText += key+':'+hlike.style.widget_iframe[key]+' !important';
+    }
+  }
+  },
   _fbInit: function(callback) {
     var d = document;
     if (!d.getElementById(hlike._fb.id)) {
@@ -159,7 +207,19 @@ var hlike = {
     hlike._gp.js = d.createElement('script'); 
     hlike._gp.js.onload = callback;
 
-    hlike._fs.parentNode.insertBefore(hlike._gp.js, hlike._fs);
     hlike._gp.js.setAttribute('src', 'https://apis.google.com/js/platform.js');
+    hlike._fs.parentNode.insertBefore(hlike._gp.js, hlike._fs);
+  },
+  _pinInit: function(callback) {
+    var d = document;
+    hlike._pin.js = d.createElement('script'); 
+    //window.hlikePinterestCallback = callback;
+    hlike._pin.js.onload = callback;
+
+    hlike._fs.parentNode.insertBefore(hlike._pin.js, hlike._fs);
+
+    hlike._pin.js.setAttribute('defer', 'defer');
+    //hlike._pin.js.setAttribute('data-pin-build', 'hlikePinterestCallback');
+    hlike._pin.js.setAttribute('src', '//assets.pinterest.com/js/pinit.js');
   }
 };
