@@ -84,7 +84,6 @@ var hlike = {
       return hlike;
   },
   _hide: function(widget) {
-    console.log('widget:', widget, widget.querySelector('.hlike-frame'));
     var widget_iframe = widget.querySelector('.hlike-frame');
     for(var key in hlike.style.widget) {
       widget.style[key] = hlike.style.widget[key];
