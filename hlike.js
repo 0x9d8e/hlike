@@ -83,6 +83,39 @@ var hlike = {
       
       return hlike;
   },
+  
+  gp: function(selector) {
+    var d = document;
+    var elements = d.querySelectorAll(selector);
+    hlike._gp.widgets = elements;
+    
+    for(var i = hlike._gp.widgets.length-1; i >= 0; i--) {
+      var widget = hlike._gp.widgets[i];
+      var widgetFrame = d.createElement('div'); 
+        
+      widget.appendChild(widgetFrame);
+      
+      widgetFrame.setAttribute('class', 'hlike-frame');
+      widgetFrame.setAttribute('data-size', 'small');
+      
+      var widgetFrameInner = d.createElement('div');
+      widgetFrame.appendChild(widgetFrameInner);
+      widgetFrameInner.setAttribute('class', 'g-plusone');
+      widgetFrameInner.setAttribute('id', 'g-plusone-'+i);
+    }
+    
+    hlike._gpInit(function(){
+      setTimeout(function() {
+        for(var i = hlike._gp.widgets.length-1; i >= 0; i--) {
+          var widget = hlike._gp.widgets[i];
+          hlike._hide(widget);
+        }
+      }, 0);
+    });
+    
+    return hlike;
+    
+  },
   _hide: function(widget) {
     var widget_iframe = widget.querySelector('.hlike-frame');
     for(var key in hlike.style.widget) {
@@ -95,11 +128,14 @@ var hlike = {
   _fs: document.getElementsByTagName('script')[0],
   _fb: {id: 'facebook-jssdk'},
   _vk: {},
-  _fbInit: function() {
+  _gp: {},
+  _fbInit: function(callback) {
     var d = document;
     if (!d.getElementById(hlike._fb.id)) {
       hlike._fb.js = d.createElement('script'); 
       hlike._fb.js.setAttribute('id', hlike._fb.id);
+      hlike._fb.js.onload = callback;
+      
       if(!d.getElementById('fb-root')) {
          hlike._fb.root = d.createElement("div"); 
          hlike._fb.root.setAttribute('id', 'fb-root'); 
@@ -113,9 +149,17 @@ var hlike = {
   _vkInit: function(callback) {
     var d = document;
     hlike._vk.js = d.createElement('script'); 
-      hlike._vk.js.onload = callback;
+    hlike._vk.js.onload = callback;
 
-      hlike._fs.parentNode.insertBefore(hlike._vk.js, hlike._fs);
-      hlike._vk.js.setAttribute('src', '//vk.com/js/api/openapi.js?117');
+    hlike._fs.parentNode.insertBefore(hlike._vk.js, hlike._fs);
+    hlike._vk.js.setAttribute('src', '//vk.com/js/api/openapi.js?117');
+  },
+  _gpInit: function(callback) {
+    var d = document;
+    hlike._gp.js = d.createElement('script'); 
+    hlike._gp.js.onload = callback;
+
+    hlike._fs.parentNode.insertBefore(hlike._gp.js, hlike._fs);
+    hlike._gp.js.setAttribute('src', 'https://apis.google.com/js/platform.js');
   }
 };
