@@ -139,7 +139,9 @@ var hlike = {
     }
     
     hlike._pinInit(function(){
-      console.log('pin init!');
+      /*
+       *  Этот ужас нужно будет как-то убрать. Pinterest вродебы поддерживает некий коллбек, но на деле не вызывает его, а onload скрипта слишком рано.
+       */
       var pinInterval = setInterval(function() {
         for(var i = hlike._pin.widgets.length-1; i >= 0; i--) {
           var widget = hlike._pin.widgets[i];
