@@ -26,134 +26,233 @@ var hlike = {
     return hlike;
   },
   
-  fb: function(selector) {
-      var d = document;
-      var elements = d.querySelectorAll(selector);
+  fb: {
+    like: function(selector) {
+        var d = document;
+        var elements = d.querySelectorAll(selector);
 
-      hlike._fb.widgets = elements;
+        hlike.fb.widgets = elements;
 
-      for(var i = hlike._fb.widgets.length-1; i >= 0; i--) {
-        var widget = hlike._fb.widgets[i];
-
-        var widgetFrame = d.createElement('div'); 
-        
-        widget.appendChild(widgetFrame);
-
-        widgetFrame.setAttribute('class', 'hlike-frame fb-like');
-        widgetFrame.setAttribute('data-href', hlike.url);
-        widgetFrame.setAttribute('data-layout', 'button');
-        widgetFrame.setAttribute('data-action', 'like');
-        widgetFrame.setAttribute('data-show-faces', 'false');
-        widgetFrame.setAttribute('data-share', 'false');
-        
-        hlike._hide(widget);
-      }
-
-      setTimeout(function(){
-        hlike._fbInit();
-      }, 0);
-      
-      return hlike;
-  },
-  
-  vk: function(selector) {
-      var d = document;
-      var elements = d.querySelectorAll(selector);
-      hlike._vk.widgets = elements;
-      hlike._vkInit(function(){
-        VK.init({apiId: hlike.vkKey, onlyWidgets: true});
-
-        for(var i = hlike._vk.widgets.length-1; i >= 0; i--) {
-          var widget = hlike._vk.widgets[i];
+        for(var i = hlike.fb.widgets.length-1; i >= 0; i--) {
+          var widget = hlike.fb.widgets[i];
 
           var widgetFrame = d.createElement('div'); 
-          
+
           widget.appendChild(widgetFrame);
 
-          widgetFrame.setAttribute('class', 'hlike-frame vk_like');
-          widgetFrame.setAttribute('id', 'vk_like_'+i);
+          widgetFrame.setAttribute('class', 'hlike-frame fb-like');
+          widgetFrame.setAttribute('data-href', hlike.url);
+          widgetFrame.setAttribute('data-layout', 'button');
+          widgetFrame.setAttribute('data-action', 'like');
+          widgetFrame.setAttribute('data-show-faces', 'true');
+          widgetFrame.setAttribute('data-share', 'false');
 
-          
-          VK.Widgets.Like("vk_like_"+i, {type: "mini"});
-          setTimeout(function(){
-            hlike._hide(widget);
-          }, 50);
-        }
-      });
-      
-      return hlike;
-  },
-  
-  gp: function(selector) {
-    var d = document;
-    var elements = d.querySelectorAll(selector);
-    hlike._gp.widgets = elements;
-    
-    for(var i = hlike._gp.widgets.length-1; i >= 0; i--) {
-      var widget = hlike._gp.widgets[i];
-      var widgetFrame = d.createElement('div'); 
-        
-      widget.appendChild(widgetFrame);
-      
-      widgetFrame.setAttribute('class', 'hlike-frame');
-      widgetFrame.setAttribute('data-size', 'small');
-      
-      var widgetFrameInner = d.createElement('div');
-      widgetFrame.appendChild(widgetFrameInner);
-      widgetFrameInner.setAttribute('class', 'g-plusone');
-      widgetFrameInner.setAttribute('id', 'g-plusone-'+i);
-      
-    }
-    
-    hlike._gpInit(function(){
-      setTimeout(function() {
-        for(var i = hlike._gp.widgets.length-1; i >= 0; i--) {
-          var widget = hlike._gp.widgets[i];
           hlike._hide(widget);
         }
-      }, 0);
-    });
-    
-    return hlike;
-    
-  },
 
-  pin: function(selector) {
-    var d = document;
-    var elements = d.querySelectorAll(selector);
-    hlike._pin.widgets = elements;
-    
-    for(var i = hlike._pin.widgets.length-1; i >= 0; i--) {
-      var widget = hlike._pin.widgets[i];
-      var widgetFrame = d.createElement('a'); 
-        
-      widget.appendChild(widgetFrame);
-      
-      widgetFrame.setAttribute('data-pin-do', 'buttonBookmark');
-      widgetFrame.setAttribute('data-pin-color', 'red');
-      widgetFrame.setAttribute('href', '//www.pinterest.com/pin/create/button/');
-      
-      var img = d.createElement('img');
-      img.src = '//assets.pinterest.com/images/pidgets/pinit_fg_en_rect_red_20.png';
-      widgetFrame.appendChild(img);
-    }
-    
-    hlike._pinInit(function(){
-      /*
-       *  Этот ужас нужно будет как-то убрать. Pinterest вродебы поддерживает некий коллбек, но на деле не вызывает его, а onload скрипта слишком рано.
-       */
-      var pinInterval = setInterval(function() {
-        for(var i = hlike._pin.widgets.length-1; i >= 0; i--) {
-          var widget = hlike._pin.widgets[i];
-          hlike._pin.hide(widget);
+        setTimeout(function(){
+          hlike.fb._init();
+        }, 0);
+
+        return hlike;
+    },
+    _init: function(callback) {
+      var d = document;
+
+      if (!d.getElementById(hlike.fb._id)) {
+        hlike.fb._js = d.createElement('script'); 
+        hlike.fb._js.setAttribute('id', hlike.fb.id);
+        hlike.fb._js.onload = function() {
+          if(typeof(callback) !== 'undefined')
+            callback();
+
+          setTimeout(function(){
+            FB.Event.subscribe('edge.create', hlike.fb._liked);
+            FB.Event.subscribe('edge.remove', hlike.fb._unliked);
+          }, 100);
+        };
+
+        if(!d.getElementById('fb-root')) {
+           hlike.fb._root = d.createElement("div"); 
+           hlike.fb._root.setAttribute('id', 'fb-root'); 
+           d.querySelector('body').appendChild(hlike.fb._root);
         }
-      }, 1000);//The Kostyl' :)
-      setTimeout(function(){
-        clearInterval(pinInterval);
-      }, 1000*20);
-    });
-  },
 
+        hlike._fs.parentNode.insertBefore(hlike.fb._js, hlike._fs);
+        hlike.fb._js.setAttribute('src', '//connect.facebook.net/ru_RU/sdk.js#xfbml=1&version=v2.5&appId='+hlike.fbKey);
+      }
+    },
+    liked: function(callback) {
+      hlike.fb._liked = callback;
+      return hlike;
+    },
+
+    unliked: function(callback) {
+      hlike.fb._unliked = callback;
+      return hlike;
+    },
+    _id: 'facebook-jssdk',
+    _liked: function(response) {},
+    _unliked: function(response) {}
+  },
+  
+  vk: {
+    like: function(selector) {
+        var d = document;
+        var elements = d.querySelectorAll(selector);
+        hlike.vk.widgets = elements;
+        hlike.vk._init(function(){
+          VK.init({apiId: hlike.vkKey, onlyWidgets: true});
+
+          for(var i = hlike.vk.widgets.length-1; i >= 0; i--) {
+            var widget = hlike.vk.widgets[i];
+            var widgetFrame = d.createElement('div'); 
+
+            widget.appendChild(widgetFrame);
+
+            widgetFrame.setAttribute('class', 'hlike-frame vk_like');
+            widgetFrame.setAttribute('id', 'vk_like_'+i);
+
+            VK.Widgets.Like("vk_like_"+i, {type: "mini"});
+
+            setTimeout(function(){
+              hlike._hide(widget);
+            }, 50);
+          }
+       });
+
+       return hlike;
+    },
+    liked: function(callback) {
+      hlike.vk._liked = callback;
+      return hlike;
+    },
+    unliked: function(callback) {
+      hlike.vk._unliked = callback;
+      return hlike;
+    },
+    _init: function(callback) {
+      var d = document;
+
+      hlike.vk._js = d.createElement('script'); 
+      hlike.vk._js.onload = function() {
+        if(typeof(callback) !== 'undefined')
+          callback();
+        
+        setTimeout(function(){
+          VK.Observer.subscribe('widgets.like.liked', hlike.vk._liked);
+          VK.Observer.subscribe('widgets.like.unliked', hlike.vk._unliked);
+        }, 0);
+      };
+
+      hlike._fs.parentNode.insertBefore(hlike.vk._js, hlike._fs);
+      hlike.vk._js.setAttribute('src', '//vk.com/js/api/openapi.js?117');
+
+    },
+    _liked: function(response) {},
+    _unliked: function(response) {}
+  },
+  
+  gp: {
+    like: function(selector) {
+      var d = document;
+      var elements = d.querySelectorAll(selector);
+      hlike.gp.widgets = elements;
+
+      for(var i = hlike.gp.widgets.length-1; i >= 0; i--) {
+        var widget = hlike.gp.widgets[i];
+        var widgetFrame = d.createElement('div'); 
+
+        widget.appendChild(widgetFrame);
+
+        widgetFrame.setAttribute('class', 'hlike-frame');
+        widgetFrame.setAttribute('data-size', 'small');
+
+        var widgetFrameInner = d.createElement('div');
+        widgetFrame.appendChild(widgetFrameInner);
+        widgetFrameInner.setAttribute('class', 'g-plusone');
+        widgetFrameInner.setAttribute('id', 'g-plusone-'+i);
+
+      }
+
+      hlike.gp._init(function(){
+        setTimeout(function() {
+          for(var i = hlike.gp.widgets.length-1; i >= 0; i--) {
+            var widget = hlike.gp.widgets[i];
+            hlike._hide(widget);
+          }
+        }, 0);
+      });
+
+      return hlike;
+    },
+    _init: function(callback) {
+      var d = document;
+      hlike.gp._js = d.createElement('script'); 
+      hlike.gp._js.onload = callback;
+
+      hlike.gp._js.setAttribute('src', 'https://apis.google.com/js/platform.js');
+      hlike._fs.parentNode.insertBefore(hlike.gp._js, hlike._fs);
+    },
+  },
+  
+  pin: {
+    like: function(selector) {
+      var d = document;
+      var elements = d.querySelectorAll(selector);
+      hlike.pin.widgets = elements;
+
+      for(var i = hlike.pin.widgets.length-1; i >= 0; i--) {
+        var widget = hlike.pin.widgets[i];
+        var widgetFrame = d.createElement('a'); 
+
+        widget.appendChild(widgetFrame);
+
+        widgetFrame.setAttribute('data-pin-do', 'buttonBookmark');
+        widgetFrame.setAttribute('data-pin-color', 'red');
+        widgetFrame.setAttribute('href', '//www.pinterest.com/pin/create/button/');
+
+        var img = d.createElement('img');
+        img.src = '//assets.pinterest.com/images/pidgets/pinit_fg_en_rect_red_20.png';
+        widgetFrame.appendChild(img);
+      }
+
+      hlike.pin._init(function(){
+        /*
+         *  Этот ужас нужно будет как-то убрать. Pinterest вродебы поддерживает некий коллбек, но на деле не вызывает его, а onload скрипта слишком рано.
+         */
+        var pinInterval = setInterval(function() {
+          for(var i = hlike.pin.widgets.length-1; i >= 0; i--) {
+            var widget = hlike.pin.widgets[i];
+            hlike.pin._hide(widget);
+          }
+        }, 1000);//The Kostyl' :)
+        setTimeout(function(){
+          clearInterval(pinInterval);
+        }, 1000*20);
+      });
+    },
+    _init: function(callback) {
+      var d = document;
+      hlike.pin._js = d.createElement('script'); 
+      hlike.pin._js.onload = callback;
+
+      hlike._fs.parentNode.insertBefore(hlike.pin._js, hlike._fs);
+
+      hlike.pin._js.setAttribute('defer', 'defer');
+      hlike.pin._js.setAttribute('src', '//assets.pinterest.com/js/pinit.js');
+    },
+    _hide: function(widget) {
+      var widget_iframe = widget.childNodes[0];
+      for(var key in hlike.style.widget) {
+        widget.style.cssText += key+':'+hlike.style.widget[key]+' !important';
+      }
+      for(var key in hlike.style.widget_iframe) {
+        widget_iframe.style.cssText += key+':'+hlike.style.widget_iframe[key]+' !important';
+      }
+    }
+  },
+ 
   _hide: function(widget) {
     var widget_iframe = widget.querySelector('.hlike-frame');
     for(var key in hlike.style.widget) {
@@ -164,64 +263,5 @@ var hlike = {
     }
   },
   
-  _fs: document.getElementsByTagName('script')[0],
-  _fb: {id: 'facebook-jssdk'},
-  _vk: {},
-  _gp: {},
-  _pin: {
-    hide: function(widget) {
-    var widget_iframe = widget.childNodes[0];
-    for(var key in hlike.style.widget) {
-      widget.style.cssText += key+':'+hlike.style.widget[key]+' !important';
-    }
-    for(var key in hlike.style.widget_iframe) {
-      widget_iframe.style.cssText += key+':'+hlike.style.widget_iframe[key]+' !important';
-    }
-  }
-  },
-  _fbInit: function(callback) {
-    var d = document;
-    if (!d.getElementById(hlike._fb.id)) {
-      hlike._fb.js = d.createElement('script'); 
-      hlike._fb.js.setAttribute('id', hlike._fb.id);
-      hlike._fb.js.onload = callback;
-      
-      if(!d.getElementById('fb-root')) {
-         hlike._fb.root = d.createElement("div"); 
-         hlike._fb.root.setAttribute('id', 'fb-root'); 
-         d.querySelector('body').appendChild(hlike._fb.root);
-      }
-
-      hlike._fs.parentNode.insertBefore(hlike._fb.js, hlike._fs);
-      hlike._fb.js.setAttribute('src', '//connect.facebook.net/ru_RU/sdk.js#xfbml=1&version=v2.5&appId='+hlike.fbKey);
-    }
-  },
-  _vkInit: function(callback) {
-    var d = document;
-    hlike._vk.js = d.createElement('script'); 
-    hlike._vk.js.onload = callback;
-
-    hlike._fs.parentNode.insertBefore(hlike._vk.js, hlike._fs);
-    hlike._vk.js.setAttribute('src', '//vk.com/js/api/openapi.js?117');
-  },
-  _gpInit: function(callback) {
-    var d = document;
-    hlike._gp.js = d.createElement('script'); 
-    hlike._gp.js.onload = callback;
-
-    hlike._gp.js.setAttribute('src', 'https://apis.google.com/js/platform.js');
-    hlike._fs.parentNode.insertBefore(hlike._gp.js, hlike._fs);
-  },
-  _pinInit: function(callback) {
-    var d = document;
-    hlike._pin.js = d.createElement('script'); 
-    //window.hlikePinterestCallback = callback;
-    hlike._pin.js.onload = callback;
-
-    hlike._fs.parentNode.insertBefore(hlike._pin.js, hlike._fs);
-
-    hlike._pin.js.setAttribute('defer', 'defer');
-    //hlike._pin.js.setAttribute('data-pin-build', 'hlikePinterestCallback');
-    hlike._pin.js.setAttribute('src', '//assets.pinterest.com/js/pinit.js');
-  }
+  _fs: document.getElementsByTagName('script')[0]
 };

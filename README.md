@@ -21,8 +21,8 @@
       fbKey: '1550284425231361',
       url: document.location.href,
       style: hlike.defaultStyle
-    }).vk('.hLike.vk')//Инициализируем во всех нужных элементах соответствующие виджеты
-      .fb('.hLike.facebook');
+    }).vk.like('.hLike.vk')//Инициализируем во всех нужных элементах соответствующие виджеты
+      .fb.like('.hLike.facebook');
 
 Можно указать собственные стили:
 
@@ -72,13 +72,13 @@
 
 Далее вызываем методы соцсетей с css-селектором в единственном аттрибуте:
 
-    hlike.fb('.fbLike')
-         .vk('.vkLike');
+    hlike.fb.like('.fbLike')
+         .vk.like('.vkLike');
 
 Если нужно вызывать их с какими-либо разными параметрами сначала вызываем `set`:
 
-    hlike.set({url: document.location.href+'?sn=vk'}).vk('.vkLike')
-         .set({url: document.location.href+'?sn=fb'}).fb('.fbLike');
+    hlike.set({url: document.location.href+'?sn=vk'}).vk.like('.vkLike')
+         .set({url: document.location.href+'?sn=fb'}).fb.like('.fbLike');
 
 На момент написания этого текста доступны только лайки.
 
@@ -90,7 +90,7 @@
   <li><b>url:</b>&nbsp;адрес к которому применяется лайк <i>(если сеть поддерживает url отличный от текущего)</i>;</li>
 </ul>
 
-<h2>Методы:</h2>
+<h2>Методы:[устарело, см. код]</h2>
 <ul>
   <li><b>set:</b>&nbsp;пакетно устанавливает свойства (принимает объект) и возвращает hlike;</li>
   <li><b>vk:</b>&nbsp;принимает css-селектор для элементов, которые нужно сделать vk-лайками и возвращает hlike;</li>
