@@ -1,3 +1,4 @@
+/*! hlike v0.1-beta by Ivan Ignatev - https://github.com/0x9d8e/hlike - Licensed MIT */
 var hlike = {
   fbKey: '',
   vkKey: '',
